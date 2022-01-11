@@ -383,7 +383,7 @@ Ogni gioco viene classificato attraverso categoria e meccaniche di gioco. Questi
 ### Le categorie
 
 Un gioco da tavolo può appartenere a più di una categoria, per esempio un gioco può essere un gioco di carte ambientato in un mondo fantasy, oppure un gioco di miniature con ambientazione horror a stile war game. Queste proprietà possono indicare quindi l'ambientazione, lo stile di gioco, il pubblico a cui punta il gioco o la struttura dei componenti.
-Con i dati raccolti è possibile vedere quali sono le categorie di giochi più diffuse e magari rapportarle a quelle che hanno una media migliore riguarlo le valutazioni. Considerando il risultato è spunta subito all'occhio che i giochi di carte sono in grande quantità. Questo molto probabilmente è dovuto al fatto che il costo dello sviluppo di un gioco di carte è molto più basso rispetto allo sviluppo di un gioco con plancia, miniature ed altri componenti che rendono la produzione ed il giocare più complesso.
+Con i dati raccolti è possibile vedere quali sono le categorie di giochi più diffuse e magari rapportarle a quelle che hanno una media migliore riguarlo le valutazioni. Considerando il risultato è spunta subito all'occhio che i giochi di carte sono in grande quantità. Questo molto probabilmente è dovuto al fatto che il costo dello sviluppo di una carta come materiale di gioco è molto più basso rispetto allo sviluppo di plancia, miniature ed altri componenti.
 
 ```{r categories_amount}
 categories_per_title = csv_file %>%
@@ -403,7 +403,7 @@ rm(categories_per_title)
 
 ### Le meccaniche
 
-Una meccanica di gioco consiste in come i giocatori interagiranno con il gioco, una classica meccanica è il "Dice rolling" ovvero l'utilizzo di dadi per sapere se un azione compiuta in un gioco è stata compiuta correttamente, oppure per comparare il risultato con un avversario. Possiamo vedere infatti che i dadi sono un elemento molto presente nei giochi da tavolo, infatti spesso e volentieri sono i componenti che rappresentano l'alea in un gioco, essendo questi il metodo più semplice e meno costoso per aggiungere il fattore fortuna in un gioco da tavolo. Inoltre è visibile anche la meccanica "Hand management" che sicuramente è presente in questa quantità dal fatto che (come visto in precedenza) è molto grande la quantità di giochi di carte.
+Una meccanica di gioco consiste in come i giocatori interagiranno con il gioco, una classica meccanica è il "Dice rolling" ovvero l'utilizzo di dadi per sapere se un azione compiuta in un gioco è stata compiuta correttamente, oppure per comparare il risultato con un avversario. Possiamo vedere infatti che i dadi sono un elemento molto presente nei giochi da tavolo, infatti spesso e volentieri sono i componenti che rappresentano l'alea in un gioco, essendo questi il metodo più semplice e meno costoso per aggiungere il fattore fortuna in un gioco da tavolo. Inoltre è visibile anche la meccanica "Hand management" che sicuramente è presente in questa quantità dal fatto che (come visto in precedenza) è molto grande la quantità di giochi con carte.
 
 ```{r mechanics_amount}
 mechanics_per_title = csv_file %>%
@@ -570,6 +570,24 @@ csv_file %>%
   select(category, mechanics) %>% 
   count(category, mechanics, sort = T) %>% 
   datatable(options = list(dom = 'tp'))
+```
+
+### Popolarità dei giochi rispetto alla data di uscita
+
+Considerando la data di pubblicazione di un gioco possiamo valutare se in questa data sono usciti molti giochi famosi considerandone quanti di questi sono posseduti da utenti della comunity. Per la visualizzazione del grafico sono state ignorate le entry che possiedono una data di uscita inferiore all'anno 1900
+
+```{r, message=FALSE}
+csv_file_refined %>% 
+  filter(year_of_publishing < 2022) %>% 
+  filter(year_of_publishing > 1900) %>% 
+  group_by(year_of_publishing) %>% 
+  summarise(n = sum(owned, na.rm = T)) %>% 
+  select(year_of_publishing, n) %>% 
+  arrange(-year_of_publishing) %>% 
+  ggplot(aes(year_of_publishing, n, fill = n)) +
+  geom_col() +
+  labs(fill = 'Giochi posseduti')
+
 ```
 
 ```{r garbage_collector, include=FALSE}

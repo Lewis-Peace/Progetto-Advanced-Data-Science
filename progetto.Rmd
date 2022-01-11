@@ -1,0 +1,271 @@
+```{r long_data_processing, include=FALSE}
+library(dplyr)
+library(tidyverse)
+library(tidytext)
+
+csv_file = read_csv(file = 'data_final.csv') %>% 
+  rename(categories = category)
+
+csv_file_refined = csv_file %>% 
+  mutate(categories = str_split(categories, "[.] ")) %>% 
+  mutate(artists = str_split(artists, "[.] ")) %>% 
+  mutate(designer = str_split(designer, "[.] ")) %>% 
+  mutate(mechanics = str_split(mechanics, "[.] ")) %>% 
+  mutate(publishers = str_split(publishers, "[.] ")) %>% 
+  filter(!is.na(title))
+
+## In substance it does this
+## data %>% 
+##   select(col) %>% 
+##   unlist() %>% 
+##   unique() %>% 
+##   as_tibble()
+get_uniques_entries = function(data, col){
+  r = as_tibble(unique(unlist(select(data, col))))
+  return(r)
+}
+
+categories = get_uniques_entries(csv_file_refined, 'categories') %>% 
+  rename(category = value)
+
+publishers = get_uniques_entries(csv_file_refined, 'publishers') %>% 
+  rename(publisher = value)
+
+artists = get_uniques_entries(csv_file_refined, 'artists') %>% 
+  rename(artist = value)
+
+mechanics = get_uniques_entries(csv_file_refined, 'mechanics') %>% 
+  rename(mechanic = value)
+
+designers = get_uniques_entries(csv_file_refined, 'designer') %>% 
+  rename(designer = value)
+
+if (!exists('all_mechanics_rating_mean')) {
+  all_mechanics_rating_mean = csv_file %>%
+    select(title, mechanics, rating) %>% 
+    expand_grid(mechanics) %>% 
+    filter(str_detect(mechanics, value)) %>% 
+    select(value, rating) %>% 
+    group_by(value) %>% 
+    summarise(mean = mean(rating, na.rm = T)) %>% 
+    rename(mechanic = value)
+}
+
+if (!exists('all_categories_rating_mean')) {
+  all_categories_rating_mean = csv_file %>%
+    rename(categories = categories) %>% 
+    select(title, categories, rating) %>% 
+    expand_grid(categories) %>% 
+    filter(str_detect(categories, value)) %>% 
+    select(value, rating) %>% 
+    group_by(value) %>% 
+    summarise(mean = mean(rating, na.rm = T)) %>% 
+    rename(category = value)
+}
+
+rm(get_uniques_entries)
+```
+
+## Le Domande
+
+- 1) Quali sono i giochi maggiormente posseduti?
+- 2) Quali sono i giochi più desiderati?
+- 3) Quale è il valore medio come valutazione per ogni categoria?
+- 4) Quale è il valore medio come valutazione per ogni meccanica?
+- 5) Le valutazioni medie della comunity influenzano i giochi più comprati?
+- 6) Quali sono i giochi con le valutazioni più alte?
+- 7) Quali sono le categorie più comuni tra i giochi posseguti maggiormente?
+- 8) A quanto ammontano le "vendite" per ogni anno?
+- 9) Quale è l'anno con i migliori giochi da tavolo sviluppati a seconda del rating?
+- 10) Quale è la valutazione media dei giochi a seconda della quantità di giocatori?
+- 11) 
+
+## Risposta a domanda 1/2
+
+```{r most_owned_games, comment=NA, echo=TRUE}
+most_owned = csv_file %>% 
+  select(owned, title) %>% 
+  arrange(-owned) %>% 
+  head(10)
+
+most_wished = csv_file %>% 
+  select(wishing, title) %>% 
+  arrange(-wishing) %>% 
+  head(10)
+
+most_owned = most_owned %>% 
+  rename(title,title_owned = title)
+
+temp = most_owned
+temp$wished = most_wished$wishing
+temp$title_wished = most_wished$title
+
+temp
+
+rm(temp)
+rm(most_wished)
+rm(most_owned)
+
+```
+
+## Risposta domanda 3/4
+
+```{r, echo=TRUE, eval=FALSE}
+all_type_rating_mean = csv_file %>%
+  select(title, type, rating) %>% 
+  expand_grid(type) %>% 
+  filter(str_detect(type, value)) %>% 
+  select(value, rating) %>% 
+  group_by(value) %>% 
+  summarise(mean = mean(rating, na.rm = T))
+```
+
+```{r}
+all_categories_rating_mean
+all_mechanics_rating_mean
+```
+
+## Risposta domanda 5
+
+```{r answer_5, message=FALSE, echo=TRUE}
+most_owned = csv_file %>% 
+  select(owned, title) %>% 
+  arrange(-owned) %>% 
+  head(10) %>% 
+  rename(title,title_owned = title)
+
+mechanics_most_owned_games = most_owned %>% 
+  rename(title = title_owned) %>% 
+  select(title) %>% 
+  inner_join(csv_file) %>% 
+  select(title, mechanics) %>% 
+  expand_grid(mechanics) %>% 
+  filter(str_detect(mechanics, mechanic)) %>% 
+  select(title, mechanic)
+
+categories_most_owned_games = most_owned %>% 
+  rename(title = title_owned) %>% 
+  select(title) %>% 
+  inner_join(csv_file) %>% 
+  select(title, categories) %>% 
+  expand_grid(categories) %>% 
+  filter(str_detect(categories, category)) %>% 
+  select(title, category)
+
+m = all_mechanics_rating_mean %>% 
+  inner_join(mechanics_most_owned_games) %>% 
+  group_by(title) %>% 
+  summarise(mechanics_mean = mean(mean, na.rm = T)) %>% 
+  select(title, mechanics_mean)
+
+c = all_categories_rating_mean %>% 
+  inner_join(categories_most_owned_games) %>% 
+  group_by(title) %>% 
+  summarise(categories_mean = mean(mean, na.rm = T)) %>% 
+  select(title, categories_mean)
+
+csv_file %>% 
+  select(title, rating) %>% 
+  inner_join(m) %>% 
+  inner_join(c) %>% 
+  rename(game_rating = rating)
+
+rm(m)
+rm(c)
+rm(categories_most_owned_games)
+rm(mechanics_most_owned_games)
+rm(most_owned)
+
+```
+
+## Risposta domanda 6
+
+```{r, echo=TRUE, message=FALSE}
+csv_file_refined %>% 
+  arrange(-rating) %>% 
+  head(20000)
+```
+
+## Risposta domanda 7
+
+```{r, echo=TRUE, message=FALSE}
+csv_file %>% 
+  select(owned, title) %>% 
+  arrange(-owned) %>% 
+  head(100) %>%
+  select(title) %>% 
+  inner_join(csv_file) %>% 
+  select(title, categories) %>% 
+  expand_grid(categories) %>% 
+  filter(str_detect(categories, category)) %>% 
+  select(title, category) %>% 
+  group_by(category) %>% 
+  count(category) %>% 
+  select(category, n) %>% 
+  arrange(-n)
+```
+
+## Risposta domanda 8
+Per vendite consideriamo i giochi posseduti
+
+```{r, echo=TRUE, message=FALSE}
+csv_file_refined %>% 
+  filter(year_of_publishing < 2022) %>% 
+  group_by(year_of_publishing) %>% 
+  summarise(n = sum(owned, na.rm = T)) %>% 
+  select(year_of_publishing, n) %>% 
+  arrange(-year_of_publishing)
+
+```
+
+## Risposta domanda 9
+
+```{r, echo=TRUE, message=FALSE}
+csv_file_refined %>% 
+  filter(year_of_publishing < 2022) %>% 
+  group_by(year_of_publishing) %>% 
+  summarise(n = mean(rating, na.rm = T)) %>% 
+  select(year_of_publishing, n) %>% 
+  arrange(-year_of_publishing)
+```
+
+## Risposta domanda 10
+
+```{r, echo=TRUE, message=FALSE}
+csv_file_refined %>% 
+  filter(!is.na(min_players)) %>% 
+  select(min_players, rating) %>% 
+  group_by(min_players) %>% 
+  summarise(mean = mean(rating, na.rm = T)) %>% 
+  arrange(-mean)
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+```
