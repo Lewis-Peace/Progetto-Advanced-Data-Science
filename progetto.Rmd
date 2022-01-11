@@ -44,11 +44,10 @@ if (!exists('all_mechanics_rating_mean')) {
   all_mechanics_rating_mean = csv_file %>%
     select(title, mechanics, rating) %>% 
     expand_grid(mechanics) %>% 
-    filter(str_detect(mechanics, value)) %>% 
-    select(value, rating) %>% 
-    group_by(value) %>% 
-    summarise(mean = mean(rating, na.rm = T)) %>% 
-    rename(mechanic = value)
+    filter(str_detect(mechanics, mechanic)) %>% 
+    select(mechanic, rating) %>% 
+    group_by(mechanic) %>% 
+    summarise(mean = mean(rating, na.rm = T))
 }
 
 if (!exists('all_categories_rating_mean')) {
@@ -56,11 +55,10 @@ if (!exists('all_categories_rating_mean')) {
     rename(categories = categories) %>% 
     select(title, categories, rating) %>% 
     expand_grid(categories) %>% 
-    filter(str_detect(categories, value)) %>% 
-    select(value, rating) %>% 
-    group_by(value) %>% 
-    summarise(mean = mean(rating, na.rm = T)) %>% 
-    rename(category = value)
+    filter(str_detect(categories, category)) %>% 
+    select(category, rating) %>% 
+    group_by(category) %>% 
+    summarise(mean = mean(rating, na.rm = T))
 }
 
 rm(get_uniques_entries)
@@ -81,20 +79,18 @@ rm(get_uniques_entries)
 - 11) Quali sono le parole più utilizzate per un titolo di un gioco?
 - 12) Quante sono le varianti del monopoly
 - 13) Quale è il rapporto tra giochi in vendita e giochi voluti?
-- 14) Considerando l'aver meno copie possedute rispetto a quello che ne ha di più in handicap come sarebbero i rating?
+- 14) Considerando l'aver meno copie possedute rispetto a quello che ne ha di più un handicap come sarebbero i rating?
 
 ## Risposta a domanda 1/2
 
 ```{r most_owned_games, comment=NA, echo=TRUE}
 most_owned = csv_file %>% 
   select(owned, title) %>% 
-  arrange(-owned) %>% 
-  head(10)
+  arrange(-owned)
 
 most_wished = csv_file %>% 
   select(wishing, title) %>% 
-  arrange(-wishing) %>% 
-  head(10)
+  arrange(-wishing)
 
 most_owned = most_owned %>% 
   rename(title,title_owned = title)

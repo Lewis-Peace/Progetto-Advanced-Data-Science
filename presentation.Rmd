@@ -70,7 +70,7 @@ Il progetto in questione riguarda la creazione e lo studio di un database riguar
 Avendo sviluppato un interesse riguardo il mondo dei giochi da tavolo ho pensato che sviluppare il progetto attorno a questa idea sarebbe stato un ulteriore stimolo per il progetto. Essendo a conoscenza dell'esistenza di un sito internet specializzato nel settore mi sono informato su come poter utilizzare quella grande quantità di dati a mio vantaggio. Venuto a conoscenza dell'API del sito mi sono deciso a sviluppare il codice che mi permetta di raccogliere questi dati e prepararli all'uso in R.
 
 ## Raccolta dei dati
-La raccolta dati è stata eseguita con uno script in python sviluppato per l'occasione. Lo script si interfaccia con l'API del sito ed attraverso delle richieste http e del parsing dei dati ottenuti sotto forma di xml è possibile ottenere un file .csv che contiene al suo interno le varie tuple dei giochi pronte per essere elaborate da R.
+La raccolta dati è stata fatta con uno script in python sviluppato per l'occasione. Lo script si interfaccia con l'API del sito ed attraverso delle richieste http e del parsing dei dati (ottenuti sotto forma di xml) è possibile ottenere un file .csv che contiene al suo interno le varie tuple dei giochi pronte per essere elaborate in R.
 
 ```{python main.py, echo=TRUE, eval=FALSE}
 from dataParser import data_parser
@@ -91,7 +91,7 @@ print(f'Loaded {total_entries} boardgames')
 
 ### L'API
 
-L'API permette di interfacciarsi al loro database attraverso delle richieste http get ad un indirizzo specifico. A seconda dei parametri assegnati a questa richiesta il risultato cambia. Per raggiungere lo scopo sono stati utilizzati i parametri id, type e stats. Il primo è quello che iterato al numero da 1 a 400 mila mi ritorna a batch di 1000 le varie entry. Con solamente il primo parametro però non avrei un filtro a livello di richiesta per solo i giochi da tavolo, avendo scoperto in fase di lavori che tra tutti gli id alcuni appartengono non a giochi da tavolo bensì ad altre entry presenti nel loro database. Qui entra in gioco il parametro type che mi permette di filtrare durante la richiesta solamente i giochi da tavolo. Infine con il parametro stats pari ad 1 richiedo oltre ai dati riguardo i giochi anche le loro statistiche fornite dalla comunity.
+L'API permette di interfacciarsi al loro database attraverso delle richieste http get ad un indirizzo specifico. A seconda dei parametri assegnati a questa richiesta il risultato cambia. Per raggiungere lo scopo sono stati utilizzati i parametri id, type e stats. Il primo è quello che iterato al numero da 1 a 400 mila mi ritorna a batch di 1000 le varie entry. Utilizzando solamente il primo parametro, non avrei un filtro a livello di richiesta, avendo scoperto in fase di lavori che tra tutti gli id alcuni appartengono non a giochi da tavolo bensì ad altre entry presenti nel loro database ma non inerenti con il tema del progetto. Qui entra in gioco il parametro type che mi permette di filtrare durante la richiesta solamente i giochi da tavolo. Infine con il parametro stats pari ad 1 richiedo oltre ai dati riguardo i giochi anche le statistiche fornite dalla comunity.
 
 <center>
   ![](Presentation images/BGGAPI02.PNG){width=80%}
@@ -99,7 +99,7 @@ L'API permette di interfacciarsi al loro database attraverso delle richieste htt
 
 ### Il download dei dati
 
-Tutta la parte di download viene gestita da questa classe python che utilizza il funzionamento dell'API di BGG inviando richieste di mille in mille elmenti. La quantità è stata stabilita per il fatto che alla richiesta di una quantità maggiore la risposta dal server ritornava un errore avvisando che la quantità richiesta era di dimensione troppo elevata. Questa richiesta ritorna un elemento xml che viene immagazzinato in un file denominato raw_data pronto per essere elaborato nello step successivo.
+Tutta la parte di download viene gestita da questa classe python che utilizza il funzionamento dell'API di BGG inviando richieste di mille in mille elementi. Il valore di batch è stato stabilito da motivo che alla richiesta di una quantità maggiore la risposta del server consisteva in un errore, avvisando che richiedere più di mille elementi non era consentito. Questa richiesta ritorna un elemento xml che viene immagazzinato in un file denominato raw_data.xml pronto per essere elaborato nello step successivo.
 
 ```{python downloader.py, echo=TRUE, eval=FALSE}
 
@@ -138,7 +138,7 @@ class data_downloader:
 
 ### Il parsing dei dati
 
-Il parsing dei dati viene sempre fatto utilizzando python. La classe prende in ingresso il file raw_data e ne elabora i dati convertendoli da xml a csv. Questo passaggio viene fatto per rendere facilmente accessibili i dati da R essendo questi immagazzinati in una maniera abbastanza confusionaria
+Il parsing dei dati viene sempre fatto utilizzando python. La classe prende in ingresso il file raw_data.xml e ne elabora i dati convertendoli da xml a csv. Questo passaggio viene fatto per rendere facilmente accessibili i dati da R essendo questi immagazzinati troppo confusionariamente nella normale forma xml.
 
 ```{python parser.py, eval=FALSE, echo=TRUE}
 
