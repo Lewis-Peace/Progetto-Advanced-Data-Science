@@ -486,6 +486,27 @@ rm(p)
 
 ```
 
+Oltre a quello è possibile anche eseguire uno studio sulle parole più utilizzate nel titolo del gioco, è chiaramente visibile che war ed il suo simile battle sono molto utilizzati. È invece inaspettato il risultato ottenuto per la parola monopoly, questo fa immaginare che esistano quasi 1200 diverse edizioni del gioco.
+
+```{r title_word_study, message=FALSE}
+
+stop_words_boardgames = c('game', 'de', 'das', 'edition', 'card', 'party', 'la', 'dice', 'board', 'der', '2', 'rules')
+
+csv_file_refined %>% 
+  unnest_tokens(word, title) %>% 
+  select(word) %>%
+  anti_join(stop_words %>% rbind(tibble(word = stop_words_boardgames, lexicon = 'SMART'))) %>%
+  count(word) %>% 
+  arrange(-n) %>% 
+  head(10) %>% 
+  ggplot(aes(word, n, fill = word)) +
+  geom_col(show.legend = F) +
+  coord_flip()
+
+rm(stop_words_boardgames)
+
+```
+
 ## Gli sviluppatori dei giochi
 
 Dietro allo sviluppo di un gioco da tavolo spesso e volentieri è presente un team che stabilisce le meccaniche di gioco, la tipologia e quantità dei componenti, l'arte della scatola, del libro delle regole, dei componenti e un'azienda che gestisce la traduzione e la distribuzione ai consumatori. Questi ruoli sono coperti da varie figure, tra i quali ci sono gli artisti che si occupano di tutta la parte visiva (la modellazione 3D delle miniature, l'impaginazione del libro delle regole, la parte artistica della plancia, ...). Ai designer che si occupano delle meccaniche del gioco, del significato dei vari componenti, e del bilanciamento del gioco a seconda della quantità di giocatori e magari della difficoltà che questi voglio giocare. Alla fine i publisher coprono il ruolo delle aziende che gestiscono la vendita del gioco.

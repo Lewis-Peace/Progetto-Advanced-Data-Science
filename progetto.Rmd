@@ -78,7 +78,10 @@ rm(get_uniques_entries)
 - 8) A quanto ammontano le "vendite" per ogni anno?
 - 9) Quale è l'anno con i migliori giochi da tavolo sviluppati a seconda del rating?
 - 10) Quale è la valutazione media dei giochi a seconda della quantità di giocatori?
-- 11) 
+- 11) Quali sono le parole più utilizzate per un titolo di un gioco?
+- 12) Quante sono le varianti del monopoly
+- 13) Quale è il rapporto tra giochi in vendita e giochi voluti?
+- 14) Considerando l'aver meno copie possedute rispetto a quello che ne ha di più in handicap come sarebbero i rating?
 
 ## Risposta a domanda 1/2
 
@@ -240,24 +243,47 @@ csv_file_refined %>%
   arrange(-mean)
 ```
 
-## Risposta domanda 
+## Risposta domanda 11
 
 ```{r, echo=TRUE, message=FALSE}
+csv_file %>% 
+  unnest_tokens(word, title) %>% 
+  select(word) %>%
+  anti_join(stop_words) %>% 
+  count(word) %>% 
+  arrange(-n)
+
 ```
 
-## Risposta domanda 
+## Risposta domanda 12
 
 ```{r, echo=TRUE, message=FALSE}
+csv_file_refined %>% 
+  filter(str_detect(title, 'Monopoly')) %>% 
+  nrow()
+
 ```
 
-## Risposta domanda 
+## Risposta domanda 13
 
 ```{r, echo=TRUE, message=FALSE}
+csv_file_refined %>% 
+  select(title, trading, wanting) %>% 
+  mutate(want_trade_ratio = wanting / trading) %>% 
+  select(title, want_trade_ratio) %>% 
+  arrange(-want_trade_ratio) %>% 
+  filter(!is.infinite(want_trade_ratio))
 ```
 
-## Risposta domanda 
+## Risposta domanda 14
 
 ```{r, echo=TRUE, message=FALSE}
+csv_file_refined %>% 
+  select(title, owned, rating) %>% 
+  mutate(owned = owned / max(csv_file_refined$owned)) %>% 
+  mutate(owned_rating_ratio = rating * owned) %>% 
+  arrange(-owned_rating_ratio) %>% 
+  select(title,owned_rating_ratio)
 ```
 
 ## Risposta domanda 
