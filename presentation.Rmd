@@ -243,7 +243,7 @@ csv_file_refined %>%
 
 ## Dati forniti dalla comunity
 
-Ogni utente che fa uso di questo sito ha la possibilità di registrare un account. Con questo account è possibile interagire con il database dando la propria opinione sotto forma di un voto da 1 a 10 riguardo un gioco da tavolo, oppure inserire all'interno della propria libreria virtuale i giochi da tavolo posseduti. Ulteriormente all'aggiunta dei giochi posseduti è anche possibile inserire quali giochi si ha intenzione di comprare e quali di vendere.
+Ogni utente che fa uso di questo sito ha la possibilità di registrare un account. Con questo account è possibile interagire con il database dando la propria opinione sotto forma di un voto da 0 a 10 riguardo un gioco da tavolo, oppure inserire all'interno della propria libreria virtuale i giochi da tavolo posseduti. Ulteriormente all'aggiunta dei giochi posseduti è anche possibile inserire quali giochi si ha intenzione di comprare e quali di vendere.
 
 ### Cosa vuole o possiede la comunity
 
@@ -401,6 +401,21 @@ rm(categories_per_title)
 
 ```
 
+Qui invece è visibile la categoria prevalente per ogni minimo di giocatori. 
+
+```{r, message=FALSE}
+csv_file %>% 
+  select(title, category, min_players) %>% 
+  expand_grid(categories) %>% 
+  filter(str_detect(category, value)) %>%
+  select(title, value, min_players) %>% 
+  group_by(value, min_players) %>% 
+  count(value) %>% 
+  group_by(min_players) %>% 
+  slice_max(n) %>% 
+  datatable()
+```
+
 ### Le meccaniche
 
 Una meccanica di gioco consiste in come i giocatori interagiranno con il gioco, una classica meccanica è il "Dice rolling" ovvero l'utilizzo di dadi per sapere se un azione compiuta in un gioco è stata compiuta correttamente, oppure per comparare il risultato con un avversario. Possiamo vedere infatti che i dadi sono un elemento molto presente nei giochi da tavolo, infatti spesso e volentieri sono i componenti che rappresentano l'alea in un gioco, essendo questi il metodo più semplice e meno costoso per aggiungere il fattore fortuna in un gioco da tavolo. Inoltre è visibile anche la meccanica "Hand management" che sicuramente è presente in questa quantità dal fatto che (come visto in precedenza) è molto grande la quantità di giochi con carte.
@@ -418,6 +433,21 @@ mechanics_per_title %>%
   datatable(options = list(dom = 'tp'), rownames = F, colnames = c('Meccanica', '#'))
 
 rm(mechanics_per_title)
+```
+
+Qui invece è visibile la meccanica prevalente per ogni minimo di giocatori.
+
+```{r, message=FALSE}
+csv_file %>% 
+  select(title, category, min_players) %>% 
+  expand_grid(mechanics) %>% 
+  filter(str_detect(category, value)) %>%
+  select(title, value, min_players) %>% 
+  group_by(value, min_players) %>% 
+  count(value) %>% 
+  group_by(min_players) %>% 
+  slice_max(n) %>% 
+  datatable()
 ```
 
 ### Text mining
@@ -610,6 +640,30 @@ csv_file_refined %>%
   labs(fill = 'Giochi posseduti')
 
 ```
+
+### Correlazione minimo di 5 giocatori con la categoria
+
+Come è visibile dalla tabella i giochi che richiedono un minimo di 5 giocatori per giocare sono principalmente dei party games.
+
+```{r}
+csv_file %>% 
+  filter(min_players == 5) %>% 
+  select(title, category, min_players) %>% 
+  expand_grid(categories) %>% 
+  filter(str_detect(category, value)) %>%
+  select(title, value) %>% 
+  group_by(value) %>% 
+  count(value) %>% 
+  arrange(-n) %>% 
+  datatable()
+  
+```
+
+## Ringraziamenti
+
+<center>
+  ![](Presentation images/thanks.jpg){width=100%}
+</center>
 
 ```{r garbage_collector, include=FALSE}
 rm(artists)

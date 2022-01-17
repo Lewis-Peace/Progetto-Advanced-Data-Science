@@ -5,11 +5,11 @@ downloader = data_downloader('raw_data')
 # text json csv for different types of outputs
 parser = data_parser('data', 'csv', 'raw_data')
 
-starting_id, batch = 200000, 1000
+starting_id, batch = 0, 1000
 delete_old_data = True
 total_entries = 0
 
-for i in range(starting_id, 400000, batch):
+for i in range(starting_id, 360000, batch):
     print(f'Processing data from {i} to {i + batch}')
     downloader.main(i, batch)
     total_entries += parser.main(delete_old_data)

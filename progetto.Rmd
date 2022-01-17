@@ -284,6 +284,38 @@ csv_file_refined %>%
 
 ## Risposta domanda 
 
+```{r}
+csv_file %>% 
+  select(title, category, min_players) %>% 
+  expand_grid(categories) %>% 
+  filter(str_detect(category, value)) %>%
+  select(title, value, min_players) %>% 
+  group_by(value, min_players) %>% 
+  count(value)
+  
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+csv_file %>% 
+  select(title, category, min_players) %>% 
+  expand_grid(categories) %>% 
+  filter(str_detect(category, value)) %>%
+  select(title, value, min_players) %>% 
+  group_by(value, min_players) %>% 
+  count(value) %>% 
+  group_by(min_players) %>% 
+  slice_max(n)
+```
+
+## Risposta domanda 
+
+```{r, echo=TRUE, message=FALSE}
+```
+
+## Risposta domanda 
+
 ```{r, echo=TRUE, message=FALSE}
 ```
 

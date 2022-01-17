@@ -1,4 +1,3 @@
-from os import stat
 import os
 import xml.etree.ElementTree as ET
 from boardgame import boardgame as BG
@@ -13,12 +12,12 @@ class data_parser:
     def get_statistics(self, element_statistics: ET.Element, output_type: str):
         stats = []
         if output_type == "text":
-            wanted_stats = ["average", "owned", "wanting", "trading", "wishing"]
+            wanted_stats = ["bayesaverage", "owned", "wanting", "trading", "wishing"]
             for stat in wanted_stats:
                 stats.append(f"\t{stat.capitalize()}: " + self.get_specific_data_from_item(element_statistics, stat))
             return "\n".join(stats)
         else:
-            wanted_stats = ["average", "owned", "wanting", "trading", "wishing"]
+            wanted_stats = ["bayesaverage", "owned", "wanting", "trading", "wishing"]
             for stat in wanted_stats:
                 stats.append(self.get_specific_data_from_item(element_statistics, stat))
             return stats
